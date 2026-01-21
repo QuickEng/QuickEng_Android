@@ -51,7 +51,7 @@ fun QuickEngTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = QuickEngTypography,
         content = content
     )
 }
