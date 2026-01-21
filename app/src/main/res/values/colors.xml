@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="PrimaryColor">#FF85C3F6</color>
+    <color name="SubColor1">#0056C7</color>
+    <color name="SubColor2">#AD00C9</color>
+    <color name="SubColor3">#009868</color>
+    <color name="Black">#000000</color>
+    <color name="Grey1">#616161</color>
+    <color name="Grey2">#AAAAAA</color>
+    <color name="Grey3">#E0E0E0</color>
+    <color name="White">#FFFFFF</color>
+</resources>
