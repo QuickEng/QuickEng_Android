@@ -15,34 +15,27 @@ import com.example.quickeng.ui.screen.TrackerScreen
 fun MainScaffold() {
     val navController = rememberNavController()
     val items = listOf(
-        BottomNavItem.Home,
         BottomNavItem.Study,
+        BottomNavItem.Home,
         BottomNavItem.Tracker
     )
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentRoute = navBackStackEntry?.destination?.route
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentRoute = navBackStackEntry?.destination?.route
 
-                items.forEach { item ->
-                    NavigationBarItem(
-                        selected = currentRoute == item.route,
-                        onClick = {
-                            navController.navigate(item.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        label = { Text(item.label) },
-                        icon = { } // 아이콘은 나중에 넣자
-                    )
+            BottomBar(
+                items = items,
+                currentRoute = currentRoute,
+                onItemClick = { item ->
+                    navController.navigate(item.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
-            }
+            )
         }
     ) { innerPadding ->
         NavHost(
@@ -50,9 +43,10 @@ fun MainScaffold() {
             startDestination = BottomNavItem.Home.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(BottomNavItem.Home.route) { HomeScreen() }
             composable(BottomNavItem.Study.route) { StudyScreen() }
+            composable(BottomNavItem.Home.route) { HomeScreen() }
             composable(BottomNavItem.Tracker.route) { TrackerScreen() }
         }
     }
 }
+
