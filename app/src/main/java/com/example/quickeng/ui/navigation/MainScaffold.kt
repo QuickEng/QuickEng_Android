@@ -9,7 +9,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.*
 import com.example.quickeng.ui.screen.HomeScreen
 import com.example.quickeng.ui.screen.StudyScreen
-import com.example.quickeng.ui.screen.TrackerScreen
+import com.example.quickeng.ui.tracker.TrackerScreen
 import com.example.quickeng.ui.script.ScriptScreen
 
 @Composable
