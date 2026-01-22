@@ -29,8 +29,8 @@ fun TrackerScreen() {
             .fillMaxSize()
             .background(Color.White)
             .padding(horizontal = 20.dp),
-        contentPadding = PaddingValues(top = 24.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        contentPadding = PaddingValues(top = 12.dp, bottom = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item { TrackerTitle(title = "Tracker") }
         item { Spacer(modifier = Modifier.height(36.dp)) }
