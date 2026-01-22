@@ -63,11 +63,12 @@ data class ShortItem(
 )
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onVideoClick: () -> Unit = {} // 기본값 {} 넣어두면 미리보기가 안 깨짐
+) {
     // 입력값 상태 유지
     var urlText by rememberSaveable { mutableStateOf("") }
-
-     // 쇼츠 더미 데이터 리스트 (나중에 교체)
+    // 쇼츠 더미 데이터 리스트 (나중에 교체)
     val shorts = remember {
         listOf(
             ShortItem("1", "NYC Slang: What's good?"),
@@ -115,6 +116,7 @@ fun HomeScreen() {
         // 3) 그리드 + 4) 빈 상태
         ShortsSection(
             items = shorts,
+            onItemClick = onVideoClick, // 클릭하면 onVideoClick 실행!
             modifier = Modifier.weight(1f)
         )
 
@@ -275,6 +277,7 @@ private fun UrlInputBar(
 @Composable
 private fun ShortsSection(
     items: List<ShortItem>,
+    onItemClick: () -> Unit, // [수정
     modifier: Modifier = Modifier
 ) {
     if (items.isEmpty()) {
@@ -290,14 +293,16 @@ private fun ShortsSection(
         contentPadding = PaddingValues(bottom = 90.dp) // 바텀바에 가리지 않게 여유
     ) {
         items(items, key = { it.id }) { item ->
-            ShortCard(item)
+            ShortCard(item,onItemClick)
         }
     }
 }
 
 
 @Composable
-private fun ShortCard(item: ShortItem) {
+private fun ShortCard(item: ShortItem,
+                      onClick: () -> Unit
+                      ) {
     val shape = RoundedCornerShape(18.dp)
 
     Box(
@@ -305,6 +310,7 @@ private fun ShortCard(item: ShortItem) {
             .fillMaxWidth()
             .aspectRatio(163f / 204f)
             .clip(shape)
+            .clickable { onClick() }
     ) {
         // 1) 썸네일 영역
         Box(

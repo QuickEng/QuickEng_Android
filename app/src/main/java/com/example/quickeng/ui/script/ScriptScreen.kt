@@ -1,0 +1,242 @@
+package com.example.quickeng.ui.script
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+
+// 1. 데이터 모델
+data class ScriptItem(
+    val id: Long,
+    val tag: String,
+    val eng: String,
+    val kor: String,
+    var isSelected: Boolean = false
+)
+
+// 2. 메인 화면 Composable
+@Composable
+fun ScriptScreen() {
+    // 카드 더미 데이터
+    val scriptList = remember {
+        mutableStateListOf(
+            ScriptItem(1, "NYC Slang", "In New York, we don't really say hello.", "뉴욕에서 우리는 'hello'라고 잘 안 해요."),
+            ScriptItem(2, "Coffee", "Can I get a drip coffee with room for milk?", "드립 커피에 우유 넣을 공간 좀 남겨주실래요?"),
+            ScriptItem(3, "Greeting", "What's good?", "별일 없어? (친근한 인사)"),
+            )
+    }
+
+    // 선택된 개수 계산
+    val selectedCount = scriptList.count { it.isSelected }
+
+    Scaffold { innerPadding ->
+        // 전체를 감싸는 Box
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+        ) {
+            // 영상 + 리스트 (화면 전체 채움)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
+            ) {
+                // A. 영상 영역
+                VideoPlayer(
+                    videoId = "sBZfqOcOULI",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(16f / 9f)
+                )
+
+                // B. 헤더
+                Text(
+                    text = "Script",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(
+                        start = 24.dp, end = 24.dp, top = 20.dp, bottom = 16.dp
+                    )
+                )
+
+                // C. 리스트
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(
+                        start = 24.dp,
+                        end = 24.dp,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(scriptList) { item ->
+                        ScriptCard(
+                            item = item,
+                            onClick = {
+                                val index = scriptList.indexOf(item)
+                                scriptList[index] = scriptList[index].copy(isSelected = !item.isSelected)
+                            }
+                        )
+                    }
+                }
+            }
+
+            // 하단 흰색 배경 + 버튼
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+            ) {
+                // 1. 흰색 배경 (리스트 가림용)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(60.dp)
+                        .align(Alignment.BottomCenter)
+                        .background(Color.White)
+                )
+
+                // 2. 버튼
+                Button(
+                    onClick = { /* TODO: 저장 로직 */ },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .padding(start = 24.dp, end = 24.dp, bottom = 10.dp)
+                        .height(54.dp),
+                    shape = RoundedCornerShape(100.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF64B5F6)),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                ) {
+                    Text(
+                        text = "${selectedCount}개 추가하기",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
+// 3. 개별 카드
+@Composable
+fun ScriptCard(item: ScriptItem, onClick: () -> Unit) {
+    val borderColor = if (item.isSelected) Color(0xFF85C3F6) else Color(0xFF616161)
+    val bgColor = if (item.isSelected) Color(0x3685C3F6) else Color(0xFFFFFFFF)
+    val borderWidth = if (item.isSelected) 1.5.dp else 0.5.dp
+
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = bgColor),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(borderWidth, borderColor, RoundedCornerShape(16.dp))
+                .clickable { onClick() }
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) { // 카드 전체 내부 패딩
+                Surface(
+                    color = Color(0xFFE3F2FD),
+                    shape = RoundedCornerShape(4.dp),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                ) {
+                    Text(
+                        text = item.tag,
+                        color = Color(0xFF1E88E5),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        lineHeight = 22.sp,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                    )
+                }
+
+                // 영어 문장
+                Text(
+                    text = item.eng,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    modifier = Modifier.padding(bottom = 4.dp),
+                    lineHeight = 22.sp
+                )
+
+                // 한글 해석
+                Text(
+                    text = item.kor,
+                    fontSize = 12.sp,
+                    color = Color.Gray,
+                    lineHeight = 20.sp
+                )
+            }
+        }
+    }
+// 4. 미리보기
+@Preview(showBackground = true, heightDp = 800)
+@Composable
+fun ScriptScreenPreview() {
+    MaterialTheme {
+        ScriptScreen()
+    }
+}
+
+//유튜브 영상 플레이어
+@Composable
+fun VideoPlayer(
+    videoId: String,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    AndroidView(
+        modifier = modifier,
+        factory = { ctx ->
+            YouTubePlayerView(ctx).apply {
+                lifecycleOwner.lifecycle.addObserver(this)
+                addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
+                    override fun onReady(youTubePlayer: YouTubePlayer) {
+                        // 영상 로드 (자동 재생 원하면 loadVideo, 클릭해야 재생은 cueVideo)
+                        youTubePlayer.cueVideo(videoId, 0f)
+                    }
+                })
+            }
+        },
+        onRelease = { view ->
+            lifecycleOwner.lifecycle.removeObserver(view)
+            view.release()
+        }
+    )
+}

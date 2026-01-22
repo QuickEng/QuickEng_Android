@@ -10,3 +10,6 @@ local.properties
 # 안드로이드 스튜디오 임시 파일
 *.iml
 .DS_Store
+
+# 안드로이드 스튜디오 세팅
+.idea/
