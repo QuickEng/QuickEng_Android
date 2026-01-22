@@ -1,31 +1,25 @@
 package com.example.quickeng.ui.tracker
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.quickeng.R
+import com.example.quickeng.ui.theme.*
+import com.example.quickeng.ui.theme.QuickEngTypography
 
 @Composable
 fun StatsRow(
@@ -40,14 +34,18 @@ fun StatsRow(
             modifier = Modifier.weight(1f),
             label = "STREAK",
             value = streakDays.toString(),
-            unit = "Days"
+            unit = "Days",
+            rightTopIconRes = R.drawable.bottom_home,
+            iconTint = SubColor1
         )
 
         StatCard(
             modifier = Modifier.weight(1f),
             label = "SENTENCES",
             value = totalSentences.toString(),
-            unit = "Total"
+            unit = "Total",
+            rightTopIconRes = R.drawable.bottom_home,
+            iconTint = SubColor3
         )
     }
 }
@@ -57,34 +55,73 @@ private fun StatCard(
     modifier: Modifier = Modifier,
     label: String,
     value: String,
-    unit: String
+    unit: String,
+    rightTopIconRes: Int,
+    iconTint: Color
 ) {
     Card(
         modifier = modifier.height(124.dp),
         shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(1.dp, Color(0xFFE6E6E6)),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        border = BorderStroke(1.dp, Grey3),
+        colors = CardDefaults.cardColors(containerColor = White)
     ) {
-        Box(Modifier.fillMaxSize().padding(16.dp)) {
-
-            // 오른쪽 위 아이콘 자리 (불꽃/별 같은거)
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .size(34.dp)
-                    .background(Color(0xFFF2F2F2), CircleShape)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(18.dp)
+        ) {
+            TopIcon(
+                modifier = Modifier.align(Alignment.TopEnd),
+                iconRes = rightTopIconRes,
+                iconTint = iconTint
             )
 
-            Column(Modifier.align(Alignment.BottomStart)) {
-                Text(label, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                Spacer(Modifier.height(6.dp))
+            Column(modifier = Modifier.align(Alignment.BottomStart)) {
+                Text(
+                    text = label,
+                    style = QuickEngTypography.bodyLarge,
+                    color = Black
+                )
+                Spacer(Modifier.height(20.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
-                    Text(value, fontSize = 34.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                    Text(
+                        text = value,
+                        style = QuickEngTypography.displayLarge,
+                        color = Black
+                    )
                     Spacer(Modifier.width(8.dp))
-                    Text(unit, fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(bottom = 6.dp))
+                    Text(
+                        text = unit,
+                        style = QuickEngTypography.bodyLarge,
+                        color = Grey2,
+                        modifier = Modifier.padding(bottom = 6.dp)
+                    )
                 }
             }
         }
+    }
+}
+
+
+@Composable
+private fun TopIcon(
+    modifier: Modifier = Modifier,
+    iconRes: Int,
+    iconTint: androidx.compose.ui.graphics.Color
+) {
+    Box(
+        modifier = modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(Grey3),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painterResource(id = iconRes),
+            contentDescription = null,
+            tint = iconTint,
+            modifier = Modifier.size(28.dp)
+        )
     }
 }
 
@@ -94,7 +131,7 @@ private fun StatsRowPreview() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White)
+            .background(White)
             .padding(20.dp)
     ) {
         StatsRow(
@@ -103,4 +140,3 @@ private fun StatsRowPreview() {
         )
     }
 }
-

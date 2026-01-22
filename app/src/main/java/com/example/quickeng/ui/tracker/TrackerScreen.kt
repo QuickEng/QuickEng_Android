@@ -1,6 +1,6 @@
 package com.example.quickeng.ui.tracker
 
-import BannerCard
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -19,7 +19,6 @@ import com.example.quickeng.ui.theme.QuickEngTypography
 
 @Composable
 fun TrackerScreen() {
-    // 지금은 더미
     val streakDays = 5
     val totalSentences = 142
     val weekly = listOf(3, 1, 5, 3, 3, 1, 4)

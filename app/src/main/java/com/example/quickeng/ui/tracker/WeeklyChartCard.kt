@@ -4,7 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -13,16 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.quickeng.ui.theme.*
 
-/**
- * 주간 학습 카드 (막대 + 평균 점선)
- */
 @Composable
 fun WeeklyChartCard(
     weekly: List<Int>,
@@ -32,25 +26,24 @@ fun WeeklyChartCard(
         modifier = Modifier
             .fillMaxWidth()
             .height(238.dp),
-        shape = RoundedCornerShape(18.dp),
-        border = BorderStroke(1.dp, Color(0xFFE6E6E6)),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        shape = RoundedCornerShape(24.dp),
+        border = BorderStroke(1.dp, Grey3),
+        colors = CardDefaults.cardColors(containerColor = White)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(20.dp,)
         ) {
             Text(
                 text = "WEEKLY LEARNING STATUS",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
+                style = QuickEngTypography.bodyLarge,
+                color = Black
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(51.dp))
 
-            SimpleWeeklyBars(
+            WeeklyBarsWithAxis(
                 values = weekly,
                 highlightIndex = highlightIndex
             )
@@ -58,92 +51,117 @@ fun WeeklyChartCard(
     }
 }
 
-/**
- * 막대 그래프 + 평균선(점선)
- */
 @Composable
-fun SimpleWeeklyBars(
+private fun WeeklyBarsWithAxis(
     values: List<Int>,
     highlightIndex: Int
 ) {
     val days = listOf("SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT")
-
     val safeValues = if (values.size >= 7) values.take(7) else values + List(7 - values.size) { 0 }
 
-    val max = (safeValues.maxOrNull() ?: 1).coerceAtLeast(1)
-    val avg = if (safeValues.isNotEmpty()) safeValues.average().toFloat() else 0f
+    val yMax = 5
+    val avg = safeValues.average().toFloat()
 
-    // 막대가 실제로 커질 수 있는 최대 높이(너가 barHeight를 120f로 계산했으니 여기도 120dp)
-    val barMaxHeightDp = 120.dp
+    val barAreaHeight = 100.dp
+    val barWidth = 34.dp
 
-    // 막대 영역(막대 + 평균선) 높이
-    val chartBoxHeight = 140.dp
+    val barShape = RoundedCornerShape(
+        topStart = 8.dp,
+        topEnd = 8.dp,
+        bottomStart = 0.dp,
+        bottomEnd = 0.dp
+    )
 
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Box(
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top
+    ) {
+        // Y축 숫자 (5~0)
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(chartBoxHeight)
+                .height(barAreaHeight)
+                .padding(end = 10.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.Start
         ) {
+            for (i in yMax downTo 0) {
+                Text(
+                    text = i.toString(),
+                    style = QuickEngTypography.bodySmall,
+                    color = Grey1
+                )
+            }
+        }
+
+        Column(modifier = Modifier.weight(1f)) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(140.dp)
+                    .height(barAreaHeight)
             ) {
-                // 1) 막대 먼저
+                // 막대들
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.BottomCenter),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxSize(),
                     verticalAlignment = Alignment.Bottom
                 ) {
                     safeValues.forEachIndexed { index, v ->
-                        val barHeight = (v.toFloat() / max.toFloat()) * 120f
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.BottomCenter
+                        ) {
+                            val clamped = v.coerceIn(0, yMax)
+                            val barHeight = (clamped.toFloat() / yMax.toFloat()) * barAreaHeight.value
 
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Box(
                                 modifier = Modifier
-                                    .width(28.dp)
+                                    .width(barWidth)
                                     .height(barHeight.dp)
                                     .background(
-                                        color = if (index == highlightIndex) Color(0xFF8EC7FF) else Color(
-                                            0xFFE7E7E7
-                                        ),
-                                        shape = RoundedCornerShape(10.dp)
+                                        color = if (index == highlightIndex) PrimaryColor else Grey3,
+                                        shape = barShape
                                     )
-                            )
-                            Spacer(Modifier.height(10.dp))
-                            Text(
-                                text = days[index],
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = if (index == highlightIndex) Color(0xFF8EC7FF) else Color.Gray
                             )
                         }
                     }
                 }
 
-                // 2) 점선을 나중에 그리면 위로 올라옴
+
+                // 평균 점선
                 Canvas(modifier = Modifier.fillMaxSize()) {
-                    val ratio = (avg / max.toFloat()).coerceIn(0f, 1f)
-                    val barAreaHeightPx = barMaxHeightDp.toPx()
-                    val barTopY = size.height - barAreaHeightPx
-                    val y = barTopY + (barAreaHeightPx * (1f - ratio))
+                    val ratio = (avg / yMax.toFloat()).coerceIn(0f, 1f)
+                    val y = size.height * (1f - ratio)
 
                     drawLine(
-                        color = Color(0xFF6FAEFF),
+                        color = PrimaryColor,
                         start = Offset(0f, y),
                         end = Offset(size.width, y),
-                        strokeWidth = 2.dp.toPx(),
+                        strokeWidth = 1.dp.toPx(),
                         pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
                     )
                 }
             }
+
+            Spacer(Modifier.height(6.dp))
+
+            // 요일
+            Row(modifier = Modifier.fillMaxWidth()) {
+                days.forEachIndexed { index, day ->
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = day,
+                            style = QuickEngTypography.bodySmall,
+                            color = if (index == highlightIndex) PrimaryColor else Grey1
+                        )
+                    }
+                }
+            }
+
         }
     }
 }
-
 
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, name = "WeeklyChartCard - With Avg Line")
 @Composable
@@ -151,7 +169,7 @@ private fun WeeklyChartCardPreview() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White)
+            .background(White)
             .padding(20.dp)
     ) {
         WeeklyChartCard(
@@ -167,7 +185,7 @@ private fun WeeklyChartCardPreview_Empty() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White)
+            .background(White)
             .padding(20.dp)
     ) {
         WeeklyChartCard(

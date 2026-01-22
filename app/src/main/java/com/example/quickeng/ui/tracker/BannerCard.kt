@@ -1,16 +1,20 @@
+package com.example.quickeng.ui.tracker
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.quickeng.R
 import com.example.quickeng.ui.theme.PrimaryColor
 import com.example.quickeng.ui.theme.QuickEngTypography
 
@@ -23,26 +27,26 @@ fun BannerCard(text: String) {
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = PrimaryColor)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(start = 32.dp, top = 24.dp, end = 32.dp, bottom = 24.dp)
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+
             Text(
-                text = "지금까지의 학습을 확인해보세요.",
+                text = text,
                 color = Color.White,
-                style = QuickEngTypography.headlineMedium
+                style = QuickEngTypography.headlineMedium,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(start = 32.dp, top = 24.dp, end = 32.dp)
             )
 
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .size(48.dp)
-                    .background(
-                        color = Color.White.copy(alpha = 0.25f),
-                        shape = CircleShape
-                    )
-            )
+
+                Icon(
+                    painter = painterResource(id = R.drawable.rocket),
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(72.dp)
+                        .align(Alignment.BottomEnd)
+                        .padding(1.dp,end=16.dp)
+                )
         }
     }
 }
