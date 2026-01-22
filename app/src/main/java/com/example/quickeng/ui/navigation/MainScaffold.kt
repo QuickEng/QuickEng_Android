@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.*
 import com.example.quickeng.ui.screen.HomeScreen
-import com.example.quickeng.ui.screen.StudyScreen
+import com.example.quickeng.ui.study.SentenceListScreen
 import com.example.quickeng.ui.tracker.TrackerScreen
 
 @Composable
@@ -43,7 +43,7 @@ fun MainScaffold() {
             startDestination = BottomNavItem.Home.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(BottomNavItem.Study.route) { StudyScreen() }
+            composable(BottomNavItem.Study.route) { SentenceListScreen() }
             composable(BottomNavItem.Home.route) { HomeScreen() }
             composable(BottomNavItem.Tracker.route) { TrackerScreen() }
         }
