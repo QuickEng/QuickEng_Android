@@ -10,6 +10,7 @@ import androidx.navigation.compose.*
 import com.example.quickeng.ui.screen.HomeScreen
 import com.example.quickeng.ui.screen.StudyScreen
 import com.example.quickeng.ui.screen.TrackerScreen
+import com.example.quickeng.ui.script.ScriptScreen
 
 @Composable
 fun MainScaffold() {
@@ -25,17 +26,19 @@ fun MainScaffold() {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
 
-            BottomBar(
-                items = items,
-                currentRoute = currentRoute,
-                onItemClick = { item ->
-                    navController.navigate(item.route) {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
+            if (currentRoute != "script") {   // script화면에선 바텀바 안 보이게
+                BottomBar(
+                    items = items,
+                    currentRoute = currentRoute,
+                    onItemClick = { item ->
+                        navController.navigate(item.route) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
-                }
-            )
+                )
+            }
         }
     ) { innerPadding ->
         NavHost(
@@ -44,8 +47,15 @@ fun MainScaffold() {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(BottomNavItem.Study.route) { StudyScreen() }
-            composable(BottomNavItem.Home.route) { HomeScreen() }
+            composable(BottomNavItem.Home.route) {
+                HomeScreen(
+                    onVideoClick = { navController.navigate("script") }
+                )
+            }
             composable(BottomNavItem.Tracker.route) { TrackerScreen() }
+            composable("script") { ScriptScreen() }
+
+
         }
     }
 }
