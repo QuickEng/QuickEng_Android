@@ -87,8 +87,6 @@ fun MainScaffold(modifier: Modifier = Modifier) {
                     onAddClick = { selectedItems ->
                         // ViewModel에 데이터 추가
                         studyVM.addSentences(selectedItems.map { it.toSentenceUi() })
-                        // 추가 후 리스트 화면으로 이동
-                        navController.navigate(BottomNavItem.Study.route)
                     }
                 )
             }
