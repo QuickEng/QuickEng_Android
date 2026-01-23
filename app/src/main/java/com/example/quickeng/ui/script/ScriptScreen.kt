@@ -42,37 +42,19 @@ import com.example.quickeng.ui.theme.QuickEngTypography
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+import android.net.Uri
+import com.example.quickeng.model.ScriptDataHolder
+import com.example.quickeng.model.ScriptItem
 
-// 1. 데이터 모델
-data class ScriptItem(
-    val id: Long,
-    val tag: String,
-    val eng: String,
-    val kor: String,
-    var isSelected: Boolean = false
-)
 
-// 2. 메인 화면 Composable
 @Composable
 fun ScriptScreen() {
-    // 카드 더미 데이터
-    val scriptList = remember {
-        mutableStateListOf(
-            ScriptItem(
-                1,
-                "NYC Slang",
-                "In New York, we don't really say hello.",
-                "뉴욕에서 우리는 'hello'라고 잘 안 해요."
-            ),
-            ScriptItem(
-                2,
-                "Coffee",
-                "Can I get a drip coffee with room for milk?",
-                "드립 커피에 우유 넣을 공간 좀 남겨주실래요?"
-            ),
-            ScriptItem(3, "Greeting", "What's good?", "별일 없어? (친근한 인사)"),
-        )
-    }
+    // 1. 홀더에서 데이터 꺼내기 (없으면 빈 껍데기 처리)
+    val data = ScriptDataHolder.currentData ?: return
+
+    // 2. 가져온 데이터로 상태 초기화
+    val scriptList = remember { mutableStateListOf(*data.scriptLines.toTypedArray()) }
+    val videoId = data.videoId
 
     // 선택된 개수 계산
     val selectedCount = scriptList.count { it.isSelected }
@@ -92,7 +74,7 @@ fun ScriptScreen() {
             ) {
                 // A. 영상 영역
                 VideoPlayer(
-                    videoId = "sBZfqOcOULI",
+                    videoId = videoId,
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(16f / 9f)

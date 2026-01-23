@@ -12,10 +12,15 @@ import com.example.quickeng.ui.screen.SplashScreen
 import com.example.quickeng.ui.study.SentenceListScreen
 import com.example.quickeng.ui.tracker.TrackerScreen
 import com.example.quickeng.ui.script.ScriptScreen
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.quickeng.ui.analyze.AnalyzeViewModel
 
 @Composable
 fun MainScaffold(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
+    // 뷰모델은 여기서 생성해서 HomeScreen에 전달 (화면이 전환되어도 유지됨)
+    val vm: AnalyzeViewModel = viewModel()
+
     val items = listOf(
         BottomNavItem.Study,
         BottomNavItem.Home,
@@ -48,13 +53,14 @@ fun MainScaffold(modifier: Modifier = Modifier) {
             }
         }
     ) { innerPadding ->
+        val vm: AnalyzeViewModel = viewModel()
         NavHost(
             navController = navController,
             startDestination = "splash", //스플래시 화면으로 진입
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(BottomNavItem.Study.route) { SentenceListScreen() }
-            // 스플래시 스크린
+            // 1. 스플래시 스크린
             composable("splash") {
                 SplashScreen(
                     onTimeout = {
@@ -65,13 +71,20 @@ fun MainScaffold(modifier: Modifier = Modifier) {
                     }
                 )
             }
+            // 2. 학습 화면(학습한 카드 저장)
             composable(BottomNavItem.Study.route) { SentenceListScreen() }
+            // 3. 홈화면
             composable(BottomNavItem.Home.route) {
                 HomeScreen(
-                    onVideoClick = { navController.navigate("script") }
+                    vm = vm,
+                    onNavigateToScript = {
+                        navController.navigate("script")
+                    }
                 )
             }
+            // 4. 트래커 화면
             composable(BottomNavItem.Tracker.route) { TrackerScreen() }
+            // 5. 스크립트 화면
             composable("script") { ScriptScreen() }
 
 
