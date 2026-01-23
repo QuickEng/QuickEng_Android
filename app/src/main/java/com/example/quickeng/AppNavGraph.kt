@@ -16,7 +16,9 @@ import com.example.quickeng.viewmodel.StudyVM
 @Composable
 fun AppNavGraph() {
     val navController = rememberNavController()
+    Log.d("AppNavGraph", "AppNavGraph Composable 시작됨")
     val studyVM: StudyVM = viewModel()
+    Log.d("AppNavGraph", "ViewModel 인스턴스: ${studyVM.hashCode()}")
 
     NavHost(
         navController = navController,

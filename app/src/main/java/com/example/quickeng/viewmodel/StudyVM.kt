@@ -8,17 +8,24 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 
 class StudyVM : ViewModel() {
+    init {
+        // ViewModel이 생성될 때마다 고유 해시코드를 출력합니다.
+        Log.d("StudyVM", "ViewModel 생성됨: ${this.hashCode()}")
+    }
+
     private val _sentences = MutableStateFlow<List<SentenceUi>>(emptyList())
     val sentences: StateFlow<List<SentenceUi>> = _sentences
 
-    // 문장 추가 함수
     fun addSentences(newItems: List<SentenceUi>) {
-        Log.d("StudyVM", "addSentences: ${newItems.size} items to add")
+        Log.d("StudyVM", "addSentences 호출됨! 아이템 개수: ${newItems.size}")
         _sentences.update { old ->
             val merged = (old + newItems).distinctBy { it.id }
-            Log.d("StudyVM", "addSentences: New items added. Merged list size: ${merged.size}")
+            Log.d("StudyVM", "합쳐진 리스트 크기: ${merged.size}")
             merged
         }
+    }
+    init {
+        Log.d("StudyVM", "ViewModel Initialized: ${this.hashCode()}")
     }
 
     // 문장 삭제 함수

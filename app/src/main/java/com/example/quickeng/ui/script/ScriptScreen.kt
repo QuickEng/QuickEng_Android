@@ -155,10 +155,15 @@ fun ScriptScreen(onAddClick: (List<ScriptItem>) -> Unit) {
 
                 // 2. 버튼
                 Button(
-                    onClick = { Log.d(TAG, "추가하기 클릭. selectedItems=${selectedItems.size}, ids=${selectedItems.map { it.id }}")
+                    onClick = {
+                        val currentSelectedItems = scriptList.filter { it.isSelected }
 
-                        onAddClick(selectedItems)
-                        Toast.makeText(context, "${selectedItems.size}개 문장 추가됨", Toast.LENGTH_SHORT).show()
+                        Log.d("ScriptScreen", "추가하기 클릭. 선택된 아이템 수: ${currentSelectedItems.size}")
+
+                        if (currentSelectedItems.isNotEmpty()) {
+                            onAddClick(currentSelectedItems)
+//                            Toast.makeText(context, "${currentSelectedItems.size}개 문장 추가됨", Toast.LENGTH_SHORT).show()
+                        }
                     },
                     enabled = selectedItems.isNotEmpty(),
                     modifier = Modifier
