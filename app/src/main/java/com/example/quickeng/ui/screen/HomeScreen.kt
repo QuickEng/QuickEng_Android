@@ -28,9 +28,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -52,41 +53,83 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.quickeng.R
+import com.example.quickeng.ui.analyze.AnalyzeUiState
+import com.example.quickeng.ui.analyze.AnalyzeViewModel
 import com.example.quickeng.ui.theme.Pretendard
-import com.example.quickeng.ui.theme.QuickEngTheme
+import com.example.quickeng.model.ScriptDataHolder
+import com.example.quickeng.model.ScriptItem
+import com.example.quickeng.model.VideoScriptData
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import com.example.quickeng.data.local.ShortsDummy
+import androidx.compose.material3.CircularProgressIndicator
+import com.example.quickeng.data.local.LocalScriptsDummy
+import com.example.quickeng.data.local.ShortItem
 
-// 더미 데이터 (나중에 실제 데이터로 교체)
-data class ShortItem(
-    val id: String,
-    val title: String
-    // val thumbnailUrl: String  // 나중에 추가
-)
 
 @Composable
 fun HomeScreen(
-    onVideoClick: () -> Unit = {}
+    vm: AnalyzeViewModel,
+    onNavigateToScript: () -> Unit // 성공 시 이동하는 람다 하나로 통일
 ) {
     // 입력값 상태 유지
     var urlText by rememberSaveable { mutableStateOf("") }
-    // 쇼츠 더미 데이터 리스트 (나중에 교체)
-    val shorts = remember {
-        listOf(
-            ShortItem("1", "NYC Slang: What's good?"),
-            ShortItem("2", "Ordering Coffee like a pro"),
-            ShortItem("3", "Kitchen English: Sizzling"),
-            ShortItem("4", "At the Airport: Check-in"),
-            ShortItem("5", "Ordering Pizza in Chicago"),
-            ShortItem("6", "Hiking Essentials"),
-            ShortItem("7", "NYC Slang: What's good?"),
-            ShortItem("8", "Ordering Coffee like a pro"),
-            ShortItem("9", "Kitchen English: Sizzling"),
-            ShortItem("10", "At the Airport: Check-in"),
-        )
-    }
+    val uiState by vm.uiState.collectAsState()
+    val context = LocalContext.current
+
+    // 추천 쇼츠 리스트 데이터
+    val shorts = ShortsDummy.shorts
+
     // 추천 쇼츠 데이터 빈 경우 상태 처리 확인용 코드
     // val shorts = remember { emptyList<ShortItem>() }
 
+    // [서버 분석 로직] ViewModel 상태 감지
+    LaunchedEffect(uiState) {
+        when (uiState) {
+            is AnalyzeUiState.Success -> {
+                val response = (uiState as AnalyzeUiState.Success).data
 
+                // videoId 기반으로 영상별 고유 ID 만들기
+                val base = kotlin.math.abs(response.videoId.hashCode().toLong()) * 1_000_000L
+
+                // 1. 서버 데이터를 공통 모델(VideoScriptData)로 변환
+                val analyzedData = VideoScriptData(
+                    videoId = response.videoId,
+                    title = response.title,
+                    scriptLines = response.scriptItems.mapIndexed { idx, dto ->
+                        ScriptItem(
+                            id = base + idx + 1,
+                            tag = dto.contextTag,
+                            eng = dto.expression,
+                            kor = dto.meaningKr
+                        )
+                    }
+                )
+
+                // 2. 홀더에 저장하고 이동
+                ScriptDataHolder.currentData = analyzedData
+                onNavigateToScript()
+
+                // 3. 상태 초기화 (중복 이동 방지)
+                vm.resetState()
+            }
+
+            is AnalyzeUiState.Error -> {
+                val msg = (uiState as AnalyzeUiState.Error).message
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                vm.resetState() // 토스트 중복 방지
+            }
+
+            else -> Unit
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .padding(horizontal = 16.dp)
+    ) {
     // 전체 배경/패딩
     Column(
         modifier = Modifier
@@ -105,23 +148,48 @@ fun HomeScreen(
             onValueChange = { urlText = it },
             onClear = { urlText = "" },
             onSubmit = {
-                // TODO: 등록 버튼 눌렀을 때 동작
+                // 서버로 전달
+                vm.analyze(videoUrl = urlText, targetLang = "ko")
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 20.dp)
         )
 
-
         // 3) 그리드 + 4) 빈 상태
         ShortsSection(
             items = shorts,
-            onItemClick = onVideoClick,
+            onItemClick = { clickedItem ->
+                // 해당 쇼츠의 더미 문장 가져오기
+                val rawLines = LocalScriptsDummy.scriptsByShortId[clickedItem.id] ?: emptyList()
+
+                // videoId 기반으로 "영상별 유니크 ID" 재부여
+                val base = kotlin.math.abs(clickedItem.videoId.hashCode().toLong()) * 1_000_000L
+                val lines = rawLines.mapIndexed { idx, s ->
+                    s.copy(id = base + idx + 1)
+                }
+
+                // Holder에 저장하고 이동
+                ScriptDataHolder.currentData = VideoScriptData(
+                    videoId = clickedItem.videoId,
+                    title = clickedItem.title,
+                    scriptLines = lines
+                )
+
+
+                onNavigateToScript()
+            },
             modifier = Modifier.weight(1f)
         )
 
+
         Spacer(Modifier.height(16.dp))
     }
+    // 로딩 오버레이
+    if (uiState is AnalyzeUiState.Loading) {
+        LoadingOverlay()
+    }
+}
 }
 
 // 헤더 로고
@@ -134,6 +202,38 @@ private fun BrandHeader() {
             .height(24.dp),
         contentScale = ContentScale.Fit
     )
+}
+
+// 분석중(로딩중)
+@Composable
+private fun LoadingOverlay() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.25f))
+            .clickable(enabled = true, onClick = { /* 터치 막기 */ }),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color.White)
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+        ) {
+            CircularProgressIndicator()
+            Text(
+                text = "분석 중이에요...",
+                style = TextStyle(
+                    fontFamily = Pretendard,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
+                    color = Color(0xFF85C3F6)
+                )
+            )
+        }
+    }
 }
 
 // 입력창 그림자
@@ -277,7 +377,7 @@ private fun UrlInputBar(
 @Composable
 private fun ShortsSection(
     items: List<ShortItem>,
-    onItemClick: () -> Unit,
+    onItemClick: (ShortItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (items.isEmpty()) {
@@ -290,19 +390,21 @@ private fun ShortsSection(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(top=28.dp, bottom = 90.dp)
+        contentPadding = PaddingValues(top = 28.dp, bottom = 90.dp)
     ) {
         items(items, key = { it.id }) { item ->
-            ShortCard(item,onItemClick)
+            ShortCard(item, { onItemClick(item) }
+            )
         }
     }
 }
 
 
 @Composable
-private fun ShortCard(item: ShortItem,
-                      onClick: () -> Unit
-                      ) {
+private fun ShortCard(
+    item: ShortItem,
+    onClick: () -> Unit
+) {
     val shape = RoundedCornerShape(18.dp)
 
     Box(
@@ -367,13 +469,13 @@ private fun EmptyState(modifier: Modifier = Modifier) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-private fun HomePreview() {
-    QuickEngTheme(
-        darkTheme = false,
-        dynamicColor = false
-    ) {
-        HomeScreen()
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//private fun HomePreview() {
+//    QuickEngTheme(
+//        darkTheme = false,
+//        dynamicColor = false
+//    ) {
+//        HomeScreen()
+//    }
+//}
