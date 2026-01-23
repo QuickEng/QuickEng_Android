@@ -1,4 +1,5 @@
 package com.example.quickeng.ui.script
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -30,11 +31,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.example.quickeng.ui.theme.Grey1
+import com.example.quickeng.ui.theme.QuickEngTypography
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
@@ -54,10 +58,20 @@ fun ScriptScreen() {
     // 카드 더미 데이터
     val scriptList = remember {
         mutableStateListOf(
-            ScriptItem(1, "NYC Slang", "In New York, we don't really say hello.", "뉴욕에서 우리는 'hello'라고 잘 안 해요."),
-            ScriptItem(2, "Coffee", "Can I get a drip coffee with room for milk?", "드립 커피에 우유 넣을 공간 좀 남겨주실래요?"),
+            ScriptItem(
+                1,
+                "NYC Slang",
+                "In New York, we don't really say hello.",
+                "뉴욕에서 우리는 'hello'라고 잘 안 해요."
+            ),
+            ScriptItem(
+                2,
+                "Coffee",
+                "Can I get a drip coffee with room for milk?",
+                "드립 커피에 우유 넣을 공간 좀 남겨주실래요?"
+            ),
             ScriptItem(3, "Greeting", "What's good?", "별일 없어? (친근한 인사)"),
-            )
+        )
     }
 
     // 선택된 개수 계산
@@ -108,7 +122,8 @@ fun ScriptScreen() {
                             item = item,
                             onClick = {
                                 val index = scriptList.indexOf(item)
-                                scriptList[index] = scriptList[index].copy(isSelected = !item.isSelected)
+                                scriptList[index] =
+                                    scriptList[index].copy(isSelected = !item.isSelected)
                             }
                         )
                     }
@@ -152,6 +167,7 @@ fun ScriptScreen() {
         }
     }
 }
+
 // 3. 개별 카드
 @Composable
 fun ScriptCard(item: ScriptItem, onClick: () -> Unit) {
@@ -159,50 +175,50 @@ fun ScriptCard(item: ScriptItem, onClick: () -> Unit) {
     val bgColor = if (item.isSelected) Color(0x3685C3F6) else Color(0xFFFFFFFF)
     val borderWidth = if (item.isSelected) 1.5.dp else 0.5.dp
 
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = bgColor),
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(borderWidth, borderColor, RoundedCornerShape(16.dp))
-                .clickable { onClick() }
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) { // 카드 전체 내부 패딩
-                Surface(
-                    color = Color(0xFFE3F2FD),
-                    shape = RoundedCornerShape(4.dp),
-                    modifier = Modifier.padding(bottom = 8.dp)
-                ) {
-                    Text(
-                        text = item.tag,
-                        color = Color(0xFF1E88E5),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        lineHeight = 22.sp,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                    )
-                }
-
-                // 영어 문장
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = bgColor),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(borderWidth, borderColor, RoundedCornerShape(16.dp))
+            .clickable { onClick() }
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) { // 카드 전체 내부 패딩
+            Surface(
+                color = Color(0xFFCFDFF5),
+                shape = RoundedCornerShape(4.dp),
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
                 Text(
-                    text = item.eng,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    modifier = Modifier.padding(bottom = 4.dp),
-                    lineHeight = 22.sp
-                )
-
-                // 한글 해석
-                Text(
-                    text = item.kor,
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    lineHeight = 20.sp
+                    text = item.tag,
+                    color = Color(0xFF0056C7),
+                    style = QuickEngTypography.bodySmall,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                 )
             }
+
+            // 영어 문장
+            Text(
+                text = item.eng,
+                style = QuickEngTypography.bodyLarge,
+                color = Color.Black,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+
+            // 한글 해석
+            Text(
+                text = item.kor,
+                style = QuickEngTypography.bodySmall,
+                color = Grey1,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
+}
+
 // 4. 미리보기
 @Preview(showBackground = true, heightDp = 800)
 @Composable
