@@ -35,8 +35,7 @@ fun StatsRow(
             label = "STREAK",
             value = streakDays.toString(),
             unit = "Days",
-            rightTopIconRes = R.drawable.bottom_home,
-            iconTint = SubColor1
+            rightTopIconRes = R.drawable.fire_ic
         )
 
         StatCard(
@@ -44,8 +43,7 @@ fun StatsRow(
             label = "SENTENCES",
             value = totalSentences.toString(),
             unit = "Total",
-            rightTopIconRes = R.drawable.bottom_home,
-            iconTint = SubColor3
+            rightTopIconRes = R.drawable.star_ic
         )
     }
 }
@@ -56,8 +54,7 @@ private fun StatCard(
     label: String,
     value: String,
     unit: String,
-    rightTopIconRes: Int,
-    iconTint: Color
+    rightTopIconRes: Int
 ) {
     Card(
         modifier = modifier.height(124.dp),
@@ -72,8 +69,7 @@ private fun StatCard(
         ) {
             TopIcon(
                 modifier = Modifier.align(Alignment.TopEnd),
-                iconRes = rightTopIconRes,
-                iconTint = iconTint
+                iconRes = rightTopIconRes
             )
 
             Column(modifier = Modifier.align(Alignment.BottomStart)) {
@@ -106,8 +102,7 @@ private fun StatCard(
 @Composable
 private fun TopIcon(
     modifier: Modifier = Modifier,
-    iconRes: Int,
-    iconTint: androidx.compose.ui.graphics.Color
+    iconRes: Int
 ) {
     Box(
         modifier = modifier
@@ -119,7 +114,6 @@ private fun TopIcon(
         Icon(
             painter = painterResource(id = iconRes),
             contentDescription = null,
-            tint = iconTint,
             modifier = Modifier.size(28.dp)
         )
     }

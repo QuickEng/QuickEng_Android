@@ -1,5 +1,6 @@
 package com.example.quickeng.ui.script
-
+import android.content.ContentValues.TAG
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -39,9 +40,13 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.quickeng.ui.theme.Grey1
 import com.example.quickeng.ui.theme.QuickEngTypography
+import com.example.quickeng.ui.study.SentenceUi
+import com.example.quickeng.ui.study.TagType
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+import android.util.Log
+
 
 // 1. 데이터 모델
 data class ScriptItem(
@@ -54,7 +59,7 @@ data class ScriptItem(
 
 // 2. 메인 화면 Composable
 @Composable
-fun ScriptScreen() {
+fun ScriptScreen(onAddClick: (List<ScriptItem>) -> Unit) {
     // 카드 더미 데이터
     val scriptList = remember {
         mutableStateListOf(
@@ -76,6 +81,9 @@ fun ScriptScreen() {
 
     // 선택된 개수 계산
     val selectedCount = scriptList.count { it.isSelected }
+    // 추가하기 버튼 누를시 넘어가기
+    val selectedItems = scriptList.filter { it.isSelected }
+    val context = LocalContext.current
 
     Scaffold { innerPadding ->
         // 전체를 감싸는 Box
@@ -147,7 +155,17 @@ fun ScriptScreen() {
 
                 // 2. 버튼
                 Button(
-                    onClick = { /* TODO: 저장 로직 */ },
+                    onClick = {
+                        val currentSelectedItems = scriptList.filter { it.isSelected }
+
+                        Log.d("ScriptScreen", "추가하기 클릭. 선택된 아이템 수: ${currentSelectedItems.size}")
+
+                        if (currentSelectedItems.isNotEmpty()) {
+                            onAddClick(currentSelectedItems)
+//                            Toast.makeText(context, "${currentSelectedItems.size}개 문장 추가됨", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    enabled = selectedItems.isNotEmpty(),
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .fillMaxWidth()
@@ -224,7 +242,7 @@ fun ScriptCard(item: ScriptItem, onClick: () -> Unit) {
 @Composable
 fun ScriptScreenPreview() {
     MaterialTheme {
-        ScriptScreen()
+        ScriptScreen(onAddClick = {})
     }
 }
 
@@ -254,5 +272,15 @@ fun VideoPlayer(
             lifecycleOwner.lifecycle.removeObserver(view)
             view.release()
         }
+    )
+}
+
+fun ScriptItem.toSentenceUi(): SentenceUi {
+    return SentenceUi(
+        id = id.toString(),
+        tag = tag,
+        tagType = TagType.BLUE,
+        en = eng,
+        ko = kor
     )
 }
