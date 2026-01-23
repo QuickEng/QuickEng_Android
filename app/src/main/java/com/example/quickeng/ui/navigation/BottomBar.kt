@@ -103,4 +103,3 @@ private fun BottomBarPreview_TrackerSelected() {
         onItemClick = {}
     )
 }
-

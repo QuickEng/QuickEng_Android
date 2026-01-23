@@ -89,14 +89,16 @@ fun HomeScreen(
             is AnalyzeUiState.Success -> {
                 val response = (uiState as AnalyzeUiState.Success).data
 
+                // videoId 기반으로 영상별 고유 ID 만들기
+                val base = kotlin.math.abs(response.videoId.hashCode().toLong()) * 1_000_000L
 
                 // 1. 서버 데이터를 공통 모델(VideoScriptData)로 변환
-                val serverData = VideoScriptData(
+                val analyzedData = VideoScriptData(
                     videoId = response.videoId,
                     title = response.title,
-                    scriptLines = response.scriptItems.map { dto ->
+                    scriptLines = response.scriptItems.mapIndexed { idx, dto ->
                         ScriptItem(
-                            id = dto.id.hashCode().toLong(), // 임시 ID 변환
+                            id = base + idx + 1,
                             tag = dto.contextTag,
                             eng = dto.expression,
                             kor = dto.meaningKr
@@ -105,7 +107,7 @@ fun HomeScreen(
                 )
 
                 // 2. 홀더에 저장하고 이동
-                ScriptDataHolder.currentData = serverData
+                ScriptDataHolder.currentData = analyzedData
                 onNavigateToScript()
 
                 // 3. 상태 초기화 (중복 이동 방지)
@@ -158,13 +160,22 @@ fun HomeScreen(
         ShortsSection(
             items = shorts,
             onItemClick = { clickedItem ->
-                val lines = LocalScriptsDummy.scriptsByShortId[clickedItem.id] ?: emptyList()
+                // 해당 쇼츠의 더미 문장 가져오기
+                val rawLines = LocalScriptsDummy.scriptsByShortId[clickedItem.id] ?: emptyList()
 
+                // videoId 기반으로 "영상별 유니크 ID" 재부여
+                val base = kotlin.math.abs(clickedItem.videoId.hashCode().toLong()) * 1_000_000L
+                val lines = rawLines.mapIndexed { idx, s ->
+                    s.copy(id = base + idx + 1)
+                }
+
+                // Holder에 저장하고 이동
                 ScriptDataHolder.currentData = VideoScriptData(
                     videoId = clickedItem.videoId,
                     title = clickedItem.title,
                     scriptLines = lines
                 )
+
 
                 onNavigateToScript()
             },

@@ -1,5 +1,6 @@
 package com.example.quickeng.ui.study
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,6 +31,8 @@ fun SentenceListScreen(
     onDelete: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    Log.d("SentenceListScreen", "Items: ${items.map { it.id }}")
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -95,6 +98,8 @@ private fun EmptySentenceView(modifier: Modifier = Modifier) {
         )
     }
 }
+
+
 //학습 데이터 있을 경우
 @Composable
 private fun SentenceList(
@@ -111,6 +116,7 @@ private fun SentenceList(
             items = items,
             key = { it.id }
         ) { item ->
+            Log.d("SentenceList", "Rendering item: ${item.id} - ${item.en}")
             SentenceCard(
                 item = item,
                 onDelete = { onDelete(item.id) }

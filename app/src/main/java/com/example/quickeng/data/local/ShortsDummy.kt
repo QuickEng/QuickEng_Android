@@ -11,7 +11,7 @@ object ShortsDummy {
     val shorts = listOf(
         ShortItem("1", "NYC Slang: What's good?", videoId = "sBZfqOcOULI",
             thumbnailUrl = null),
-        ShortItem("2", "Ordering Coffee like a pro", videoId = "sBZfqOcOULI",
+        ShortItem("2", "Ordering Coffee like a pro", videoId = "dQw4w9WgXcQ",
             thumbnailUrl = null),
         ShortItem("3", "Kitchen English: Sizzling", videoId = "sBZfqOcOULI",
             thumbnailUrl = null),
