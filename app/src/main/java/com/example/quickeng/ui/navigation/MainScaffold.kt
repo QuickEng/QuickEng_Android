@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.*
 import com.example.quickeng.ui.screen.HomeScreen
+import com.example.quickeng.ui.screen.SplashScreen
 import com.example.quickeng.ui.study.SentenceListScreen
 import com.example.quickeng.ui.tracker.TrackerScreen
 import com.example.quickeng.ui.script.ScriptScreen
@@ -15,7 +16,7 @@ import com.example.quickeng.ui.study.SentenceUi
 import com.example.quickeng.ui.study.TagType
 
 @Composable
-fun MainScaffold() {
+fun MainScaffold(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
     val items = listOf(
         BottomNavItem.Study,
@@ -55,17 +56,23 @@ fun MainScaffold() {
     )
 
     Scaffold(
+        modifier = modifier,
         bottomBar = {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
 
-            if (currentRoute != "script") {   // script화면에선 바텀바 안 보이게
+            // 1. 바텀바를 숨겨야 하는 화면들을 정의 (스플래시 OR 스크립트 화면)
+            val isBottomBarVisible = currentRoute != "splash" && currentRoute != "script"
+
+            if (isBottomBarVisible) {
                 BottomBar(
                     items = items,
                     currentRoute = currentRoute,
                     onItemClick = { item ->
                         navController.navigate(item.route) {
-                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
                             launchSingleTop = true
                             restoreState = true
                         }
@@ -76,9 +83,21 @@ fun MainScaffold() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = BottomNavItem.Home.route,
+            startDestination = "splash", //스플래시 화면으로 진입
             modifier = Modifier.padding(innerPadding)
         ) {
+            composable(BottomNavItem.Study.route) { SentenceListScreen() }
+            // 스플래시 스크린
+            composable("splash") {
+                SplashScreen(
+                    onTimeout = {
+                        // 홈으로 이동 + 뒤로 가기 막기 로직
+                        navController.navigate(BottomNavItem.Home.route) {
+                            popUpTo("splash") { inclusive = true }
+                        }
+                    }
+                )
+            }
             composable(BottomNavItem.Study.route) { SentenceListScreen() }
             composable(BottomNavItem.Home.route) {
                 HomeScreen(
