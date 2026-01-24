@@ -1,11 +1,14 @@
 package com.example.quickeng.ui.navigation
 
 import android.util.Log
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.*
@@ -24,10 +27,8 @@ import com.example.quickeng.ui.analyze.AnalyzeViewModel
 @Composable
 fun MainScaffold(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
-    // 1. 여기서 ViewModel을 생성합니다.
     val studyVM: com.example.quickeng.viewmodel.StudyVM = androidx.lifecycle.viewmodel.compose.viewModel()
 
-    // 뷰모델은 여기서 생성해서 HomeScreen에 전달 (화면이 전환되어도 유지됨)
     val vm: AnalyzeViewModel = viewModel()
 
     val items = listOf(
@@ -36,19 +37,82 @@ fun MainScaffold(modifier: Modifier = Modifier) {
         BottomNavItem.Tracker
     )
 
-    Scaffold(
-        modifier = modifier,
-        bottomBar = {
-            val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentRoute = navBackStackEntry?.destination?.route
-            val isBottomBarVisible = currentRoute != "splash" && currentRoute != "script"
+    // 현재 route 관찰(바텀바 숨김 조건에 필요)
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+    val isBottomBarVisible = currentRoute != "splash" && currentRoute != "script"
 
-            if (isBottomBarVisible) {
+    androidx.compose.foundation.layout.Box(
+        modifier = modifier.fillMaxSize()
+    ) {
+        NavHost(
+            navController = navController,
+            startDestination = "splash",
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // 스플래시 - 시간 지나면 홈으로 이동(뒤로가기 막기)
+            composable("splash") {
+                SplashScreen(
+                    onTimeout = {
+                        navController.navigate(BottomNavItem.Home.route) {
+                            popUpTo("splash") { inclusive = true }
+                        }
+                    }
+                )
+            }
+
+            // 홈 화면
+            composable(BottomNavItem.Home.route) {
+                HomeScreen(
+                    vm = vm,
+                    onNavigateToScript = { navController.navigate("script") }
+                )
+            }
+
+            // 저장된 문장 리스트 화면
+            composable(BottomNavItem.Study.route) {
+                val sentenceItems by studyVM.sentences.collectAsState()
+                SentenceListScreen(
+                    items = sentenceItems,
+                    onDelete = { id -> studyVM.deleteSentence(id) }
+                )
+            }
+
+            // 트래커 화면
+            composable(BottomNavItem.Tracker.route) { TrackerScreen() }
+
+            // 스크립트 화면
+            composable("script") {
+                ScriptScreen(
+                    onAddClick = { selectedItems ->
+                        val videoId = ScriptDataHolder.currentData?.videoId ?: "unknown"
+
+                        // 디버그: 최종 저장될 id 확인
+                        Log.d(
+                            "MainScaffold",
+                            "Sentence IDs: " + selectedItems.map { "${videoId}_${it.id}" }
+                        )
+
+                        // 선택 문장들을 SentenceUi로 변환해서 StudyVM에 저장
+                        studyVM.addSentences(selectedItems.map { it.toSentenceUi(videoId) })
+
+                    }
+                )
+            }
+        }
+
+        // 바텀바 NavHost 위에 오버레이 되도록
+        if (isBottomBarVisible) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.BottomCenter
+            ) {
                 BottomBar(
                     items = items,
                     currentRoute = currentRoute,
                     onItemClick = { item ->
                         navController.navigate(item.route) {
+                            // 탭 이동 시 백스택 정리 + 상태 복원
                             popUpTo(navController.graph.findStartDestination().id) {
                                 saveState = true
                             }
@@ -59,58 +123,5 @@ fun MainScaffold(modifier: Modifier = Modifier) {
                 )
             }
         }
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = "splash",
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            // 2. 스터디 화면: ViewModel의 데이터를 구독해서 전달
-            composable(BottomNavItem.Study.route) {
-                val sentenceItems by studyVM.sentences.collectAsState()
-                SentenceListScreen(
-                    items = sentenceItems,
-                    onDelete = { id -> studyVM.deleteSentence(id) }
-                )
-            }
-
-            composable("splash") {
-                SplashScreen(
-                    onTimeout = {
-                        // 홈으로 이동 + 뒤로 가기 막기 로직
-                        navController.navigate(BottomNavItem.Home.route) {
-                            popUpTo("splash") { inclusive = true }
-                        }
-                    }
-                )
-            }
-            // 학습 화면(학습한 카드 저장)
-//            composable(BottomNavItem.Study.route) { SentenceListScreen() }
-            // 홈화면
-
-            composable(BottomNavItem.Home.route) {
-                HomeScreen(
-                    vm = vm,
-                    onNavigateToScript = {
-                        navController.navigate("script")
-                    }
-                )
-            }
-            // 트래커 화면
-            composable(BottomNavItem.Tracker.route) { TrackerScreen() }
-
-            // 3. 스크립트 화면: 여기서 ViewModel의 addSentences를 호출하도록 연결!
-            composable("script") {
-                ScriptScreen(
-                    onAddClick = { selectedItems ->
-                        val videoId = ScriptDataHolder.currentData?.videoId ?: "unknown"
-                        Log.d("MainScaffold", "Sentence IDs: " + selectedItems.map { "${ScriptDataHolder.currentData?.videoId}_${it.id}" })
-                        // ViewModel에 데이터 추가
-                        studyVM.addSentences(selectedItems.map { it.toSentenceUi(videoId) })
-                    }
-                )
-            }
-        }
     }
 }
-

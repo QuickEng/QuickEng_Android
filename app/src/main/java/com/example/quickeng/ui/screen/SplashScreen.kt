@@ -29,9 +29,9 @@ fun SplashScreen(
 ) {
     val backgroundColor = Color(0xFF85C3F6)
 
-    // 시간 지연 로직 (1.5초 후 이동)
+    // 시간 지연 로직 (2초 후 이동)
     LaunchedEffect(Unit) {
-        delay(1500)
+        delay(2000)
         onTimeout()
     }
 
@@ -46,7 +46,7 @@ fun SplashScreen(
             painter = painterResource(id = R.drawable.quickeng_logo2),
             contentDescription = "QuickEng Logo",
             modifier = Modifier
-                .height(60.dp)
+                .height(45.dp)
                 .fillMaxWidth(),
             contentScale = ContentScale.Fit
         )

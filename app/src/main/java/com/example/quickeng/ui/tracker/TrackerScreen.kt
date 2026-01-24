@@ -33,7 +33,7 @@ fun TrackerScreen() {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item { TrackerTitle(title = "Tracker") }
-        item { Spacer(modifier = Modifier.height(36.dp)) }
+        item { Spacer(modifier = Modifier.height(24.dp)) }
 
         item { BannerCard(text = "지금까지의 학습을 확인해보세요.") }
 
@@ -58,7 +58,8 @@ private fun TrackerTitle(title: String) {
     Text(
         text = title,
         style = QuickEngTypography.headlineLarge,
-        color = Color.Black
+        color = Color.Black,
+        modifier = Modifier.padding(top = 12.dp)
     )
 }
 
