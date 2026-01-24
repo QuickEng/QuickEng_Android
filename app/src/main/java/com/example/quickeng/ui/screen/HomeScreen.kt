@@ -51,9 +51,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.quickeng.R
 import com.example.quickeng.ui.theme.Pretendard
 import com.example.quickeng.ui.theme.QuickEngTheme
+import com.example.quickeng.viewmodel.StudyVM
 
 // 더미 데이터 (나중에 실제 데이터로 교체)
 data class ShortItem(
@@ -64,7 +66,8 @@ data class ShortItem(
 
 @Composable
 fun HomeScreen(
-    onVideoClick: () -> Unit = {}
+    studyVM: StudyVM = viewModel(),
+    onVideoClick: (String) -> Unit = {}
 ) {
     // 입력값 상태 유지
     var urlText by rememberSaveable { mutableStateOf("") }
@@ -85,7 +88,6 @@ fun HomeScreen(
     }
     // 추천 쇼츠 데이터 빈 경우 상태 처리 확인용 코드
     // val shorts = remember { emptyList<ShortItem>() }
-
 
     // 전체 배경/패딩
     Column(
@@ -277,7 +279,7 @@ private fun UrlInputBar(
 @Composable
 private fun ShortsSection(
     items: List<ShortItem>,
-    onItemClick: () -> Unit,
+    onItemClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (items.isEmpty()) {
@@ -293,7 +295,7 @@ private fun ShortsSection(
         contentPadding = PaddingValues(top=28.dp, bottom = 90.dp)
     ) {
         items(items, key = { it.id }) { item ->
-            ShortCard(item,onItemClick)
+            ShortCard(item, onClick = { onItemClick(item.id) })
         }
     }
 }

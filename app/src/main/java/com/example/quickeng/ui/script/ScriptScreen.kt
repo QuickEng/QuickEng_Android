@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -46,6 +47,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import android.util.Log
+import com.example.quickeng.viewmodel.StudyVM
 
 
 // 1. 데이터 모델
@@ -59,31 +61,15 @@ data class ScriptItem(
 
 // 2. 메인 화면 Composable
 @Composable
-fun ScriptScreen(onAddClick: (List<ScriptItem>) -> Unit) {
-    // 카드 더미 데이터
-    val scriptList = remember {
-        mutableStateListOf(
-            ScriptItem(
-                1,
-                "NYC Slang",
-                "In New York, we don't really say hello.",
-                "뉴욕에서 우리는 'hello'라고 잘 안 해요."
-            ),
-            ScriptItem(
-                2,
-                "Coffee",
-                "Can I get a drip coffee with room for milk?",
-                "드립 커피에 우유 넣을 공간 좀 남겨주실래요?"
-            ),
-            ScriptItem(3, "Greeting", "What's good?", "별일 없어? (친근한 인사)"),
-        )
-    }
+fun ScriptScreen(videoId: Int, // 이제 ID를 받습니다
+                 studyVM: StudyVM,
+                 onAddClick: (List<ScriptItem>) -> Unit) {
 
-    // 선택된 개수 계산
-    val selectedCount = scriptList.count { it.isSelected }
+    val videoData = remember { studyVM.getVideoData(videoId) }
     // 추가하기 버튼 누를시 넘어가기
-    val selectedItems = scriptList.filter { it.isSelected }
-    val context = LocalContext.current
+    val selectedItems = remember { mutableStateListOf<ScriptItem>() }
+    // URL에서 유튜브 ID 추출
+    val youtubeId = videoData?.videoUrl?.split("v=")?.lastOrNull() ?: ""
 
     Scaffold { innerPadding ->
         // 전체를 감싸는 Box
@@ -99,12 +85,9 @@ fun ScriptScreen(onAddClick: (List<ScriptItem>) -> Unit) {
                     .background(Color.White)
             ) {
                 // A. 영상 영역
-                VideoPlayer(
-                    videoId = "sBZfqOcOULI",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(16f / 9f)
-                )
+                VideoPlayer(videoId = youtubeId,
+                    modifier =
+                        Modifier.fillMaxWidth().aspectRatio(16/9f))
 
                 // B. 헤더
                 Text(
@@ -117,23 +100,29 @@ fun ScriptScreen(onAddClick: (List<ScriptItem>) -> Unit) {
                 )
 
                 // C. 리스트
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(
-                        start = 24.dp,
-                        end = 24.dp,
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(scriptList) { item ->
-                        ScriptCard(
-                            item = item,
-                            onClick = {
-                                val index = scriptList.indexOf(item)
-                                scriptList[index] =
-                                    scriptList[index].copy(isSelected = !item.isSelected)
-                            }
-                        )
+                LazyColumn {
+                    items(videoData?.learningContent ?: emptyList()) { content ->
+                            // 1. content 데이터를 ScriptItem으로 변환
+                            val currentItem = ScriptItem(
+                                id = content.expression.hashCode().toLong(),
+                                tag = content.contextTag,
+                                eng = content.expression,
+                                kor = content.meaningKr
+                            )
+
+                        val isSelected = selectedItems.any { it.eng == currentItem.eng }
+
+                            ScriptCard(
+                                item = currentItem.copy(isSelected = isSelected),
+                                onClick = {
+                                    val existing = selectedItems.find { it.eng == currentItem.eng }
+                                    if (existing != null) {
+                                        selectedItems.remove(existing)
+                                    } else {
+                                        selectedItems.add(currentItem)
+                                    }
+                                }
+                            )
                     }
                 }
             }
@@ -155,16 +144,7 @@ fun ScriptScreen(onAddClick: (List<ScriptItem>) -> Unit) {
 
                 // 2. 버튼
                 Button(
-                    onClick = {
-                        val currentSelectedItems = scriptList.filter { it.isSelected }
-
-                        Log.d("ScriptScreen", "추가하기 클릭. 선택된 아이템 수: ${currentSelectedItems.size}")
-
-                        if (currentSelectedItems.isNotEmpty()) {
-                            onAddClick(currentSelectedItems)
-//                            Toast.makeText(context, "${currentSelectedItems.size}개 문장 추가됨", Toast.LENGTH_SHORT).show()
-                        }
-                    },
+                    onClick = { onAddClick(selectedItems.toList()) },
                     enabled = selectedItems.isNotEmpty(),
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -176,7 +156,7 @@ fun ScriptScreen(onAddClick: (List<ScriptItem>) -> Unit) {
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
                     Text(
-                        text = "${selectedCount}개 추가하기",
+                        text = "${selectedItems.size}개 추가하기",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -238,13 +218,13 @@ fun ScriptCard(item: ScriptItem, onClick: () -> Unit) {
 }
 
 // 4. 미리보기
-@Preview(showBackground = true, heightDp = 800)
-@Composable
-fun ScriptScreenPreview() {
-    MaterialTheme {
-        ScriptScreen(onAddClick = {})
-    }
-}
+//@Preview(showBackground = true, heightDp = 800)
+//@Composable
+//fun ScriptScreenPreview() {
+//    MaterialTheme {
+//        ScriptScreen(onAddClick = {})
+//    }
+//}
 
 //유튜브 영상 플레이어
 @Composable
@@ -283,4 +263,64 @@ fun ScriptItem.toSentenceUi(): SentenceUi {
         en = eng,
         ko = kor
     )
+}
+
+@Preview(showBackground = true, heightDp = 800)
+@Composable
+fun ScriptScreenPreview() {
+    // 미리보기용 가짜 데이터 리스트
+    val mockItems = listOf(
+        ScriptItem(1, "Daily", "What's good?", "안녕? 무슨 좋은 일 있어?", isSelected = true),
+        ScriptItem(2, "Greeting", "Long time no see.", "오랜만이야.", isSelected = false),
+        ScriptItem(3, "Restaurant", "I'd like to order a pepperoni pizza.", "페퍼로니 피자 한 판 주문할게요.", isSelected = false)
+    )
+
+    MaterialTheme {
+        // 실제 ScriptScreen 대신, UI 구조만 보여주는 방식으로 미리보기 구성
+        Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
+            Column {
+                // 영상 영역 (회색 박스로 대체)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(16/9f)
+                        .background(Color.LightGray),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("YouTube Player Area")
+                }
+
+                Text(
+                    text = "Script",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(24.dp, 20.dp, 24.dp, 16.dp)
+                )
+
+                // 리스트 미리보기
+                Column(
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    mockItems.forEach { item ->
+                        ScriptCard(item = item, onClick = {})
+                    }
+                }
+            }
+
+            // 하단 버튼 미리보기
+            Button(
+                onClick = {},
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(24.dp, bottom = 34.dp)
+                    .height(54.dp),
+                shape = RoundedCornerShape(100.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF64B5F6))
+            ) {
+                Text("1개 추가하기", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
 }

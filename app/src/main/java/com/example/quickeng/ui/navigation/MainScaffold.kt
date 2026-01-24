@@ -7,20 +7,20 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.*
+import androidx.navigation.navArgument
 import com.example.quickeng.ui.screen.HomeScreen
 import com.example.quickeng.ui.screen.SplashScreen
 import com.example.quickeng.ui.study.SentenceListScreen
 import com.example.quickeng.ui.tracker.TrackerScreen
 import com.example.quickeng.ui.script.ScriptScreen
 import com.example.quickeng.ui.script.toSentenceUi
-import com.example.quickeng.ui.study.SentenceUi
-import com.example.quickeng.ui.study.TagType
+import com.example.quickeng.Routes // Routes 클래스가 있다면 임포트
 
 @Composable
 fun MainScaffold(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
-    // 1. 여기서 ViewModel을 생성합니다.
     val studyVM: com.example.quickeng.viewmodel.StudyVM = androidx.lifecycle.viewmodel.compose.viewModel()
 
     val items = listOf(
@@ -34,7 +34,8 @@ fun MainScaffold(modifier: Modifier = Modifier) {
         bottomBar = {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
-            val isBottomBarVisible = currentRoute != "splash" && currentRoute != "script"
+            // 상세 페이지("script/...")에서는 바텀바를 숨깁니다.
+            val isBottomBarVisible = currentRoute != "splash" && currentRoute?.startsWith("script") == false
 
             if (isBottomBarVisible) {
                 BottomBar(
@@ -58,7 +59,31 @@ fun MainScaffold(modifier: Modifier = Modifier) {
             startDestination = "splash",
             modifier = Modifier.padding(innerPadding)
         ) {
-            // 2. 스터디 화면: ViewModel의 데이터를 구독해서 전달
+            // 1. 홈 화면 (클릭 시 ID를 가지고 이동하도록 수정)
+            composable(BottomNavItem.Home.route) {
+                HomeScreen(onVideoClick = { videoId ->
+                    navController.navigate("script/$videoId")
+                })
+            }
+
+            // 2. 스크립트 화면 (ID를 인자로 받도록 수정)
+            composable(
+                route = "script/{videoId}",
+                arguments = listOf(navArgument("videoId") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val videoId = backStackEntry.arguments?.getInt("videoId") ?: 1
+                ScriptScreen(
+                    videoId = videoId,
+                    studyVM = studyVM,
+                    onAddClick = { selectedItems ->
+                        studyVM.addSentences(selectedItems.map { it.toSentenceUi() })
+                        // 추가 후 스터디 리스트 화면으로 이동
+                        navController.navigate(BottomNavItem.Study.route)
+                    }
+                )
+            }
+
+            // 3. 스터디 리스트 화면
             composable(BottomNavItem.Study.route) {
                 val sentenceItems by studyVM.sentences.collectAsState()
                 SentenceListScreen(
@@ -75,22 +100,7 @@ fun MainScaffold(modifier: Modifier = Modifier) {
                 })
             }
 
-            composable(BottomNavItem.Home.route) {
-                HomeScreen(onVideoClick = { navController.navigate("script") })
-            }
-
             composable(BottomNavItem.Tracker.route) { TrackerScreen() }
-
-            // 3. 스크립트 화면: 여기서 ViewModel의 addSentences를 호출하도록 연결!
-            composable("script") {
-                ScriptScreen(
-                    onAddClick = { selectedItems ->
-                        // ViewModel에 데이터 추가
-                        studyVM.addSentences(selectedItems.map { it.toSentenceUi() })
-                    }
-                )
-            }
         }
     }
 }
-
