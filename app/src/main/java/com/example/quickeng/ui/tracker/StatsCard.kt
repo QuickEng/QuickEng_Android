@@ -106,15 +106,14 @@ private fun TopIcon(
 ) {
     Box(
         modifier = modifier
-            .size(40.dp)
-            .clip(CircleShape)
-            .background(Grey3),
+            .size(40.dp),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             painter = painterResource(id = iconRes),
             contentDescription = null,
-            modifier = Modifier.size(28.dp)
+            modifier = Modifier.size(28.dp),
+            tint = Color.Unspecified
         )
     }
 }

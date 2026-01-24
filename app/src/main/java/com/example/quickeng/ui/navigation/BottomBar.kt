@@ -9,6 +9,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -25,7 +26,7 @@ fun BottomBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 40.dp, start = 86.dp, end = 86.dp),
+            .padding(bottom = 20.dp, start = 86.dp, end = 86.dp),
         contentAlignment = Alignment.Center
     ) {
         Row(
@@ -46,6 +47,7 @@ fun BottomBar(
                         .shadow(elevation = 8.dp, spotColor = Color(0x40000000), ambientColor = Color(0x40000000))
                         .width(64.dp)
                         .height(64.dp)
+                        .clip(RoundedCornerShape(100.dp))
                         .background(color = if(selected) Color(0xFF000000) else Color.Transparent, shape = RoundedCornerShape(size = 100.dp))
                         .clickable { onItemClick(item) },
                     contentAlignment = Alignment.Center

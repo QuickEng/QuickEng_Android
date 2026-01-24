@@ -146,7 +146,7 @@ fun ScriptScreen(
 
                         if (currentSelectedItems.isNotEmpty()) {
                             onAddClick(currentSelectedItems)
-//                            Toast.makeText(context, "${currentSelectedItems.size}개 문장 추가됨", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "${currentSelectedItems.size}개 문장 추가됨", Toast.LENGTH_SHORT).show()
                         }
                     },
                     enabled = selectedItems.isNotEmpty(),

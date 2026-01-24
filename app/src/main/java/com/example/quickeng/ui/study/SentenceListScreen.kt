@@ -41,7 +41,7 @@ fun SentenceListScreen(
     ) {
         SentenceListTopBar(
             title = "Sentence list",
-            count = items.size
+            count = items.size,
         )
 
         Spacer(Modifier.height(12.dp))
@@ -75,7 +75,8 @@ private fun SentenceListTopBar(
         Text(
             text = title,
             style = QuickEngTypography.headlineLarge,
-            color = Black
+            color = Black,
+            modifier = Modifier.padding(top = 12.dp)
         )
 
         Spacer(Modifier.weight(1f))

@@ -135,7 +135,7 @@ fun HomeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFFFFFFF))
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 8.dp)
     ) {
         Spacer(Modifier.height(16.dp))
 
@@ -181,9 +181,6 @@ fun HomeScreen(
             },
             modifier = Modifier.weight(1f)
         )
-
-
-        Spacer(Modifier.height(16.dp))
     }
     // 로딩 오버레이
     if (uiState is AnalyzeUiState.Loading) {
@@ -390,7 +387,7 @@ private fun ShortsSection(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(top = 28.dp, bottom = 90.dp)
+        contentPadding = PaddingValues(top = 28.dp)
     ) {
         items(items, key = { it.id }) { item ->
             ShortCard(item, { onItemClick(item) }
@@ -415,11 +412,20 @@ private fun ShortCard(
             .clickable { onClick() }
     ) {
         // 1) 썸네일 영역
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFF616161)) // TODO: 실제 이미지로 교체
-        )
+        if (item.thumbnailRes != null) {
+            Image(
+                painter = painterResource(id = item.thumbnailRes),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFF616161)) // 썸네일 없을 때 fallback
+            )
+        }
 
         // 2) 하단 그라디언트 오버레이
         Box(
