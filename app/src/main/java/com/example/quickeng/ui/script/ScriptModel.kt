@@ -16,30 +16,7 @@ data class ScriptItem(
     var isSelected: Boolean = false
 )
 
-// 3. 데이터 홀더 (택배 기사)
+// 3. 데이터 홀더
 object ScriptDataHolder {
     var currentData: VideoScriptData? = null
 }
-
-//// 4. 로컬 하드코딩 데이터 (홈 화면 클릭용)
-//object LocalData {
-//    val shortsMap = mapOf(
-//        "1" to VideoScriptData(
-//            videoId = "sBZfqOcOULI",
-//            title = "NYC Slang: What's good?",
-//            scriptLines = listOf(
-//                ScriptItem(1, "Slang", "What's good?", "별일 없어?"),
-//                ScriptItem(2, "Reply", "Chillin'", "그냥 쉬고 있어")
-//            )
-//        ),
-//        "2" to VideoScriptData(
-//            videoId = "sBZfqOcOULI",
-//            title = "Ordering Coffee",
-//            scriptLines = listOf(
-//                ScriptItem(1, "Order", "Iced Americano, please.", "아이스 아메리카노 주세요."),
-//                ScriptItem(2, "Option", "Extra shot.", "샷 추가요.")
-//            )
-//        )
-//        // 필요한 만큼 더 추가...
-//    )
-//}
