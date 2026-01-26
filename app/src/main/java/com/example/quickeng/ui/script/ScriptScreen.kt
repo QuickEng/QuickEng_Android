@@ -259,6 +259,7 @@ fun VideoPlayer(
     )
 }
 
+// ScriptItem을 DB 저장용 SentenceUi로 변환
 fun ScriptItem.toSentenceUi(videoId: String): SentenceUi {
     return SentenceUi(
         id = "${videoId}_${id}",

@@ -13,7 +13,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.quickeng.ui.theme.*
 
-//더미데이터
 data class SentenceUi(
     val id: String,
     val tag: String,
@@ -46,6 +45,7 @@ fun SentenceListScreen(
 
         Spacer(Modifier.height(12.dp))
 
+        // 데이터 유무에 따라 화면 분기
         if (items.isEmpty()) {
             EmptySentenceView(
                 modifier = Modifier.fillMaxSize()
